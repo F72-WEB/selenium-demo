@@ -13,8 +13,6 @@ from pages.form_page import FormPage
 @allure.story("表单交互")
 class TestFormPage:
 
-    # ============ 基础交互 ============
-
     @pytest.mark.smoke
     @pytest.mark.form
     @allure.title("填写姓名和密码")
@@ -68,8 +66,6 @@ class TestFormPage:
         page = FormPage(driver).load()
         assert "Form Fields" in page.get_title()
 
-    # ============ 提交用例（正/反） ============
-
     @pytest.mark.smoke
     @pytest.mark.form
     @allure.title("正向：完整填写表单并提交成功")
@@ -104,8 +100,16 @@ class TestFormPage:
         with allure.step("点击提交"):
             page.submit()
         with allure.step("验证 3 秒内没有出现 alert（被校验拦截）"):
-            try:
-                WebDriverWait(driver, 3).until(EC.alert_is_present())
-                pytest.fail("姓名为空时表单不应提交成功（不应该有 alert）")
-            except TimeoutException:
-                pass
+            import time
+            start = time.time()
+            alert_appeared = False
+            while time.time() - start < 3:
+                driver.title          # 保活
+                try:
+                    driver.switch_to.alert
+                    alert_appeared = True
+                    break
+                except Exception:
+                    time.sleep(0.5)
+            if alert_appeared:
+                pytest.fail("姓名为空时表单不应提交成功")

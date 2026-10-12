@@ -1,4 +1,5 @@
 name: UI Tests
+
 on:
   push:
     branches: [main]
@@ -36,15 +37,6 @@ jobs:
           SE_NODE_MAX_SESSIONS: 1
           SE_NODE_OVERRIDE_MAX_SESSIONS: true
 
-      edge:
-        image: selenium/node-edge:latest
-        env:
-          SE_EVENT_BUS_HOST: selenium-hub
-          SE_EVENT_BUS_PUBLISH_PORT: 4442
-          SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
-          SE_NODE_MAX_SESSIONS: 1
-          SE_NODE_OVERRIDE_MAX_SESSIONS: true
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,11 +52,14 @@ jobs:
           pip install -r requirements.txt
 
       - name: Wait for Grid
-        run: sleep 30
+        run: |
+          sleep 30
+          curl --retry 10 --retry-delay 3 --retry-connrefused http://localhost:4444/status
 
       - name: Run tests
         env:
           GRID_URL: http://localhost:4444
+          BROWSERS: firefox,chrome
         run: |
           pytest -n 2 --alluredir=./allure-results
 

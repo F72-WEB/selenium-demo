@@ -1,12 +1,22 @@
+# conftest.py
+import os
 import allure
 import pytest
 from selenium import webdriver
-import os
+
 
 GRID_URL = os.getenv("GRID_URL", "http://localhost:4444")
 
-# 支持的所有浏览器（和 Grid 里的节点一一对应）
-SUPPORTED_BROWSERS = ["firefox", "chrome", "edge"]
+# 默认三个浏览器
+ALL_BROWSERS = ["firefox", "chrome", "edge"]
+
+# 如果环境变量设置了 BROWSERS，就按环境变量走
+BROWSER_ENV = os.getenv("BROWSERS", "")
+SUPPORTED_BROWSERS = (
+    [b.strip() for b in BROWSER_ENV.split(",") if b.strip()]
+    if BROWSER_ENV
+    else ALL_BROWSERS
+)
 
 
 def _build_options(browser: str):
@@ -16,29 +26,21 @@ def _build_options(browser: str):
         options = Options()
         options.add_argument("--width=1920")
         options.add_argument("--height=1080")
-
     elif browser == "chrome":
         from selenium.webdriver.chrome.options import Options
         options = Options()
         options.add_argument("--window-size=1920,1080")
-
     elif browser == "edge":
         from selenium.webdriver.edge.options import Options
         options = Options()
         options.add_argument("--window-size=1920,1080")
-
     else:
         raise ValueError(f"不支持的浏览器: {browser}")
-
     return options
 
 
 @pytest.fixture(scope="function", params=SUPPORTED_BROWSERS)
 def driver(request):
-    """
-    参数化 fixture：
-    每个测试用例会依次在 firefox、chrome、edge上各跑一遍
-    """
     browser = request.param
     options = _build_options(browser)
 
