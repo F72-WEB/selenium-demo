@@ -1,0 +1,53 @@
+stages:
+  - test
+  - report
+
+variables:
+  GRID_URL: "http://selenium-hub:4444"
+  PIP_INDEX_URL: "https://pypi.tuna.tsinghua.edu.cn/simple"
+  SE_EVENT_BUS_HOST: selenium-hub
+  SE_EVENT_BUS_PUBLISH_PORT: "4442"
+  SE_EVENT_BUS_SUBSCRIBE_PORT: "4443"
+  SE_NODE_MAX_SESSIONS: "3"
+  SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
+
+ui-tests:
+  stage: test
+  image: python:3.13-slim
+
+  services:
+    - name: selenium/hub:latest
+      alias: selenium-hub
+    - name: selenium/node-firefox:latest
+      alias: firefox
+    - name: selenium/node-chrome:latest
+      alias: chrome
+    - name: selenium/node-edge:latest
+      alias: edge
+
+  before_script:
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+
+  script:
+    - sleep 15
+    - pytest -n 6 --alluredir=./allure-results
+
+  artifacts:
+    when: always
+    paths:
+      - allure-results/
+    expire_in: 7 days
+
+allure-report:
+  stage: report
+  image: frankescobar/allure-docker-service:latest
+  needs: [ui-tests]
+  script:
+    - allure generate ./allure-results -o ./allure-report --clean
+  artifacts:
+    paths:
+      - allure-report/
+    expire_in: 30 days
+  only:
+    - main
