@@ -24,7 +24,7 @@ jobs:
           SE_EVENT_BUS_HOST: selenium-hub
           SE_EVENT_BUS_PUBLISH_PORT: 4442
           SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
-          SE_NODE_MAX_SESSIONS: 3
+          SE_NODE_MAX_SESSIONS: 1
           SE_NODE_OVERRIDE_MAX_SESSIONS: true
 
       chrome:
@@ -33,7 +33,7 @@ jobs:
           SE_EVENT_BUS_HOST: selenium-hub
           SE_EVENT_BUS_PUBLISH_PORT: 4442
           SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
-          SE_NODE_MAX_SESSIONS: 3
+          SE_NODE_MAX_SESSIONS: 1
           SE_NODE_OVERRIDE_MAX_SESSIONS: true
 
       edge:
@@ -42,7 +42,7 @@ jobs:
           SE_EVENT_BUS_HOST: selenium-hub
           SE_EVENT_BUS_PUBLISH_PORT: 4442
           SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
-          SE_NODE_MAX_SESSIONS: 3
+          SE_NODE_MAX_SESSIONS: 1
           SE_NODE_OVERRIDE_MAX_SESSIONS: true
 
     steps:
@@ -60,13 +60,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Wait for Grid
-        run: sleep 15
+        run: sleep 30
 
       - name: Run tests
         env:
           GRID_URL: http://localhost:4444
         run: |
-          pytest -n 6 --alluredir=./allure-results
+          pytest -n 2 --alluredir=./allure-results
 
       - name: Upload Allure results
         if: always()
